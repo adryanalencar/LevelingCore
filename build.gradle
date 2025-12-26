@@ -1,0 +1,89 @@
+plugins {
+    id 'java'
+    id 'maven-publish'
+    id 'com.diffplug.spotless' version '8.1.0'
+}
+
+group = 'com.azuredoom.hyslayer'
+version = '1.0.0'
+
+java {
+    toolchain.languageVersion = JavaLanguageVersion.of(java_version)
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'com.h2database:h2:2.4.240'
+}
+
+spotless {
+    java {
+        eclipse().configFile("$rootDir/eclipse-formatter.xml")
+        endWithNewline()
+        importOrder("", "java", group.toString(), "\\#")
+        leadingTabsToSpaces(4)
+        removeUnusedImports()
+        trimTrailingWhitespace()
+    }
+}
+
+tasks.register('fatJar', Jar) {
+    archiveClassifier.set('')
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+
+    manifest {
+        attributes(
+                'Main-Class': 'com.azuredoom.hyslayer.Main'
+        )
+    }
+
+    from(sourceSets.main.output)
+
+    from({
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    })
+}
+
+
+tasks.build {
+    dependsOn("spotlessApply", "fatJar")
+}
+
+def keyPropsFile = new File(rootProject.projectDir, "key.properties")
+
+if (keyPropsFile.exists()) {
+    tasks.register("publishToModtale", Exec) {
+        group = "publishing"
+        description = "Publishes the built jar and changelog to Modtale.net."
+        dependsOn tasks.named("build")
+        def curlExe = org.gradle.internal.os.OperatingSystem.current().isWindows()
+                ? "C:/Windows/System32/curl.exe"
+                : "curl"
+
+        doFirst {
+            def releaseProp = new Properties()
+            releaseProp.load(new FileInputStream(keyPropsFile))
+            def apiKey = releaseProp.getProperty("modTaleKey")
+            def projectId = releaseProp.getProperty("modTaleProjectId")
+            def jarFile = layout.buildDirectory
+                    .file("libs/${project.name}-${project.version}.jar")
+                    .get().asFile
+            def changelogFile = rootProject.file("changelog.md")
+            def changelogText = changelogFile.text
+
+            commandLine(
+                    curlExe, '-X', 'POST',
+                    "https://modtale.net/api/projects/${projectId}/versions",
+                    '-H', "X-MODTALE-KEY: ${apiKey}",
+                    '-F', "file=@${jarFile.absolutePath}",
+                    '-F', "versionNumber=${project.version}",
+                    '-F', "channel=${project.release_type}",
+                    '-F', "gameVersions=${project.hytale_version}",
+                    '-F', "changelog=${changelogText}"
+            )
+        }
+    }
+}
