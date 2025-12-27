@@ -3,16 +3,17 @@ package com.azuredoom.hyleveling.level.formulas;
 import com.azuredoom.hyleveling.level.LevelFormula;
 
 /**
- * Implementation of the LevelFormula interface that calculates experience points (XP) and level values using a linear formula.
- * In this model, the XP required for each level progression grows at a constant rate defined by the XP per level parameter.
+ * Implementation of the LevelFormula interface that calculates experience points (XP) and level values using a linear
+ * formula. In this model, the XP required for each level progression grows at a constant rate defined by the XP per
+ * level parameter.
  */
 public class LinearLevelFormula implements LevelFormula {
 
     private final long xpPerLevel;
 
     /**
-     * Constructs an instance of the LinearLevelFormula class, which calculates XP and level values using a linear formula.
-     * The XP progression grows at a constant rate based on the provided XP per level value.
+     * Constructs an instance of the LinearLevelFormula class, which calculates XP and level values using a linear
+     * formula. The XP progression grows at a constant rate based on the provided XP per level value.
      *
      * @param xpPerLevel The number of experience points required for each level progression. Must be greater than 0.
      * @throws IllegalArgumentException If xpPerLevel is less than or equal to 0.
@@ -55,9 +56,10 @@ public class LinearLevelFormula implements LevelFormula {
     /**
      * Determines the level corresponding to the given number of experience points (XP) using a linear formula.
      *
-     * @param xp The total experience points for which the corresponding level is to be determined. Must be non-negative.
-     * @return The level corresponding to the specified XP value. The level will always be at least 1. If the computed level
-     *         exceeds {@link Integer#MAX_VALUE}, the method will return {@link Integer#MAX_VALUE}.
+     * @param xp The total experience points for which the corresponding level is to be determined. Must be
+     *           non-negative.
+     * @return The level corresponding to the specified XP value. The level will always be at least 1. If the computed
+     *         level exceeds {@link Integer#MAX_VALUE}, the method will return {@link Integer#MAX_VALUE}.
      * @throws IllegalArgumentException If the xp value is negative.
      */
     @Override
