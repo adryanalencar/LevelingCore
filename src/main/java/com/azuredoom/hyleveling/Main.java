@@ -18,8 +18,8 @@ public class Main {
 
         levelService.addXp(testId, 500);
 
-        LOGGER.log(System.Logger.Level.INFO, "XP: {}", levelService.getXp(testId));
-        LOGGER.log(System.Logger.Level.INFO, "Level: {}", levelService.getLevel(testId));
+        LOGGER.log(System.Logger.Level.INFO, String.format("XP: %d", levelService.getXp(testId)));
+        LOGGER.log(System.Logger.Level.INFO, String.format("Level: %d", levelService.getLevel(testId)));
 
         Runtime.getRuntime().addShutdownHook(new Thread(repository::close));
     }
