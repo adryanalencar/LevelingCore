@@ -1,0 +1,46 @@
+package com.azuredoom.hyleveling.config;
+
+/**
+ * Represents the configuration settings for the HyLeveling system. This configuration includes database connection
+ * settings and level progress formula details.
+ */
+public class HyLevelingConfig {
+
+    public Database database = new Database();
+
+    public Formula formula = new Formula();
+
+    public static class Database {
+
+        public String jdbcUrl = "jdbc:h2:file:./data/hyleveling;AUTO_SERVER=TRUE;MODE=PostgreSQL";
+
+        public String username = "";
+
+        public String password = "";
+
+        public int maxPoolSize = 10;
+    }
+
+    public static class Formula {
+
+        public String type = "EXPONENTIAL";
+
+        public Boolean migrateXP = true;
+
+        public Exponential exponential = new Exponential();
+
+        public Linear linear = new Linear();
+    }
+
+    public static class Exponential {
+
+        public double baseXp = 100.0;
+
+        public double exponent = 1.7;
+    }
+
+    public static class Linear {
+
+        public long xpPerLevel = 100;
+    }
+}

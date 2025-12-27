@@ -24,13 +24,13 @@ public final class DataSourceFactory {
      * @param password the password for the database connection
      * @return a configured HikariDataSource instance ready for database interactions
      */
-    public static HikariDataSource create(String jdbcUrl, String username, String password) {
+    public static HikariDataSource create(String jdbcUrl, String username, String password, int maxPoolSize) {
         var cfg = new HikariConfig();
         cfg.setJdbcUrl(jdbcUrl);
         cfg.setUsername(username);
         cfg.setPassword(password);
 
-        cfg.setMaximumPoolSize(10);
+        cfg.setMaximumPoolSize(maxPoolSize);
         cfg.setMinimumIdle(1);
 
         return new HikariDataSource(cfg);
