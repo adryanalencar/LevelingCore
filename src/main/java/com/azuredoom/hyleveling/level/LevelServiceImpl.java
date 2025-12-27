@@ -86,8 +86,7 @@ public class LevelServiceImpl implements LevelService {
         }
 
         var targetXp = formula.getXpForLevel(targetLevel);
-        data.setXp(targetXp);
-        repository.save(data);
+        setDataXP(data, targetXp);
 
         var newLevel = getLevel(id);
 
@@ -107,16 +106,15 @@ public class LevelServiceImpl implements LevelService {
         var data = get(id);
         var oldLevel = getLevel(id);
 
-        int targetLevel = oldLevel - level;
+        var targetLevel = oldLevel - level;
         if (targetLevel < 1) {
             targetLevel = 1;
         }
 
-        long targetXp = formula.getXpForLevel(targetLevel);
-        data.setXp(targetXp);
-        repository.save(data);
+        var targetXp = formula.getXpForLevel(targetLevel);
+        setDataXP(data, targetXp);
 
-        int newLevel = getLevel(id);
+        var newLevel = getLevel(id);
         if (newLevel < oldLevel) {
             levelDownListeners.forEach(l -> l.onLevelDown(id, newLevel));
         }
@@ -140,8 +138,7 @@ public class LevelServiceImpl implements LevelService {
         var oldLevel = getLevel(playerId);
 
         var targetXp = getXpForLevel(targetLevel);
-        data.setXp(targetXp);
-        repository.save(data);
+        setDataXP(data, targetXp);
 
         var newLevel = getLevel(playerId);
         if (newLevel > oldLevel) {
@@ -183,8 +180,7 @@ public class LevelServiceImpl implements LevelService {
         var data = get(id);
         var oldLevel = getLevel(id);
 
-        data.setXp(data.getXp() + amount);
-        repository.save(data);
+        setDataXP(data, data.getXp() + amount);
 
         xpGainListeners.forEach(l -> l.onXpGain(id, amount));
 
@@ -206,8 +202,7 @@ public class LevelServiceImpl implements LevelService {
         var data = get(id);
         var oldLevel = getLevel(id);
 
-        data.setXp(data.getXp() - amount);
-        repository.save(data);
+        setDataXP(data, data.getXp() - amount);
 
         xpLossListeners.forEach(l -> l.onXpLoss(id, amount));
 
@@ -229,8 +224,7 @@ public class LevelServiceImpl implements LevelService {
         var data = get(id);
         var oldLevel = getLevel(id);
 
-        data.setXp(xp);
-        repository.save(data);
+        setDataXP(data, xp);
 
         var newLevel = getLevel(id);
         if (newLevel > oldLevel) {
@@ -285,5 +279,17 @@ public class LevelServiceImpl implements LevelService {
     @Override
     public void registerXpLossListener(XpLossListener listener) {
         xpLossListeners.add(listener);
+    }
+
+    /**
+     * Updates the experience points (XP) of the specified player's level data and persists the changes to the repository.
+     *
+     * @param data The {@link PlayerLevelData} object representing the player's level and experience data to be updated.
+     * @param xp   The new experience points (XP) value to assign to the player. Values less than zero will be adjusted
+     *             to zero by the underlying {@code setXp} method in {@link PlayerLevelData}.
+     */
+    private void setDataXP(PlayerLevelData data, long xp) {
+        data.setXp(xp);
+        repository.save(data);
     }
 }
