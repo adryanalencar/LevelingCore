@@ -6,10 +6,9 @@ import com.zaxxer.hikari.HikariDataSource;
 /**
  * A factory class for creating and configuring database connection pools using HikariCP.
  * <p>
- * This class provides a utility method to construct a {@link HikariDataSource} instance which
- * can be used for managing database connections in a high-performance and efficient manner.
- * It is designed for ease of use and supports configuration of core connection parameters
- * such as JDBC URL, username, and password.
+ * This class provides a utility method to construct a {@link HikariDataSource} instance which can be used for managing
+ * database connections in a high-performance and efficient manner. It is designed for ease of use and supports
+ * configuration of core connection parameters such as JDBC URL, username, and password.
  * <p>
  * This class is not meant to be instantiated and is designed to be used statically.
  */
@@ -37,4 +36,3 @@ public final class DataSourceFactory {
         return new HikariDataSource(cfg);
     }
 }
-

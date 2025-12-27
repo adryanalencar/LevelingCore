@@ -10,9 +10,9 @@ import java.util.UUID;
 import javax.sql.DataSource;
 
 /**
- * Implementation of the {@link LevelRepository} interface using JDBC for data persistence. This repository manages
- * the storage and retrieval of player level data in a relational database. The implementation provides methods for
- * saving, loading, checking the existence of, and closing resources related to player level data.
+ * Implementation of the {@link LevelRepository} interface using JDBC for data persistence. This repository manages the
+ * storage and retrieval of player level data in a relational database. The implementation provides methods for saving,
+ * loading, checking the existence of, and closing resources related to player level data.
  */
 public class JdbcLevelRepository implements LevelRepository {
 
@@ -24,23 +24,22 @@ public class JdbcLevelRepository implements LevelRepository {
     }
 
     /**
-     * Ensures the existence of the "player_levels" table in the database. If the table does not already exist,
-     * it creates a new table with the necessary schema. The table consists of the following columns:
-     * - `player_id`: A unique identifier for the player, represented as a VARCHAR(36), and used as the primary key.
-     * - `xp`: A BIGINT column to store the player's experience points (XP), which cannot be null.
+     * Ensures the existence of the "player_levels" table in the database. If the table does not already exist, it
+     * creates a new table with the necessary schema. The table consists of the following columns: - `player_id`: A
+     * unique identifier for the player, represented as a VARCHAR(36), and used as the primary key. - `xp`: A BIGINT
+     * column to store the player's experience points (XP), which cannot be null.
      * <p>
-     * This method establishes a connection to the database using the provided DataSource and executes
-     * a SQL "CREATE TABLE IF NOT EXISTS" statement to create the table if it does not already exist.
-     * If any exception occurs during the operation, it wraps and rethrows the exception as a
-     * {@link HyLevelingException} to provide a clear context about the failure.
+     * This method establishes a connection to the database using the provided DataSource and executes a SQL "CREATE
+     * TABLE IF NOT EXISTS" statement to create the table if it does not already exist. If any exception occurs during
+     * the operation, it wraps and rethrows the exception as a {@link HyLevelingException} to provide a clear context
+     * about the failure.
      * <p>
-     * Implementation Notes:
-     * - Uses a try-with-resources block to ensure the proper closure of the database connection and statement.
-     * - The method is private and intended to be used internally within the class during initialization to
-     *   guarantee the schema's availability.
+     * Implementation Notes: - Uses a try-with-resources block to ensure the proper closure of the database connection
+     * and statement. - The method is private and intended to be used internally within the class during initialization
+     * to guarantee the schema's availability.
      *
-     * @throws HyLevelingException if the table creation fails due to database connectivity issues or
-     *                             an error in the SQL operation.
+     * @throws HyLevelingException if the table creation fails due to database connectivity issues or an error in the
+     *                             SQL operation.
      */
     private void createTableIfNotExists() {
         var sql = """
@@ -64,17 +63,16 @@ public class JdbcLevelRepository implements LevelRepository {
      * Saves the level-related data for a player. This method updates the player's experience points (XP) in the
      * database if an entry for the player already exists. If no entry exists, a new row is created.
      * <p>
-     * The method uses two SQL statements:
-     * 1. An "UPDATE" statement to modify the player's existing XP value if the player ID is found.
-     * 2. An "INSERT" statement to create a new entry with the player ID and XP if the update operation did not
-     *    affect any rows.
+     * The method uses two SQL statements: 1. An "UPDATE" statement to modify the player's existing XP value if the
+     * player ID is found. 2. An "INSERT" statement to create a new entry with the player ID and XP if the update
+     * operation did not affect any rows.
      * <p>
-     * This method ensures that player XP data is consistently stored in the database and handles scenarios
-     * where a player record needs to be either updated or inserted.
+     * This method ensures that player XP data is consistently stored in the database and handles scenarios where a
+     * player record needs to be either updated or inserted.
      *
-     * @param data The {@link PlayerLevelData} instance containing the player's unique identifier and XP value.
-     *             The unique identifier is used to check for existing database entries, and the XP value is
-     *             saved or updated accordingly.
+     * @param data The {@link PlayerLevelData} instance containing the player's unique identifier and XP value. The
+     *             unique identifier is used to check for existing database entries, and the XP value is saved or
+     *             updated accordingly.
      * @throws HyLevelingException if any database operation fails, such as connection issues or invalid SQL.
      */
     @Override
@@ -104,13 +102,13 @@ public class JdbcLevelRepository implements LevelRepository {
 
     /**
      * Loads the level-related data for a player identified by their unique UUID. This method retrieves the player's
-     * experience points (XP) from the database and creates a {@link PlayerLevelData} instance with the retrieved values.
-     * If no data exists for the given UUID, the method returns null. If any database-related issue occurs, it wraps
-     * and rethrows the exception as a {@link HyLevelingException}.
+     * experience points (XP) from the database and creates a {@link PlayerLevelData} instance with the retrieved
+     * values. If no data exists for the given UUID, the method returns null. If any database-related issue occurs, it
+     * wraps and rethrows the exception as a {@link HyLevelingException}.
      *
      * @param id The unique identifier of the player as a {@link UUID}.
      * @return A {@link PlayerLevelData} instance containing the player's XP and unique identifier, or null if no data
-     * exists for the given UUID.
+     *         exists for the given UUID.
      * @throws HyLevelingException if any database operation fails, such as connection issues or invalid SQL.
      */
     @Override
@@ -137,8 +135,8 @@ public class JdbcLevelRepository implements LevelRepository {
     }
 
     /**
-     * Checks if a record exists in the "player_levels" database table for the given player UUID.
-     * This method executes a SQL query using the provided UUID to determine if an entry exists.
+     * Checks if a record exists in the "player_levels" database table for the given player UUID. This method executes a
+     * SQL query using the provided UUID to determine if an entry exists.
      *
      * @param id The unique identifier of the player as a {@link UUID}.
      * @return {@code true} if a record exists for the given UUID; {@code false} otherwise.
