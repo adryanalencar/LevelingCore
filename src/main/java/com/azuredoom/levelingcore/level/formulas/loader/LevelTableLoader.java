@@ -1,5 +1,6 @@
 package com.azuredoom.levelingcore.level.formulas.loader;
 
+import com.azuredoom.levelingcore.LevelingCore;
 import com.azuredoom.levelingcore.LevelingCoreException;
 import com.azuredoom.levelingcore.level.formulas.TableLevelFormula;
 
@@ -9,7 +10,7 @@ import java.util.*;
 
 /**
  * Utility class responsible for loading or creating a level-to-XP mapping based on a CSV file. This class provides
- * functionality to load a level table from the provided directory, or create a default one if the file is not present.
+ * functionality to load a level table from the provided directory or create a default one if the file is not present.
  * The levels are defined in a CSV format where each row specifies an XP floor required to reach a specific level.
  * <p>
  * The class uses a default XP progression table if no file is found in the specified location. It validates that levels
@@ -44,32 +45,16 @@ public final class LevelTableLoader {
      * mapping by validating the levels, XP values, and their progression. If the specified file does not exist within
      * the directory, it is created with default values.
      *
-     * @param dataDir  The path to the directory containing the level-to-XP mapping file. If the directory does not
-     *                 exist, it will be created. Must not be null.
      * @param fileName The name of the file to be loaded or created within the specified directory. Must not be null.
      * @return A {@code TableLevelFormula} instance containing the validated level-to-XP mapping.
      * @throws IllegalArgumentException If any of the parameters are null.
      * @throws LevelingCoreException    If any issues occur during file creation, reading, parsing, or validation.
      */
-    public static TableLevelFormula loadOrCreateFromDataDir(Path dataDir, String fileName) {
-        return loadOrCreate(dataDir);
-    }
-
-    /**
-     * Loads a level-to-XP mapping from a CSV file in the specified directory. If the file does not exist, it is created
-     * with default values. The method ensures the integrity of the mapping by validating the levels, XP values, and
-     * their progression.
-     *
-     * @param dataDir Path to the directory containing the levels.csv file. If the file does not exist, it will be
-     *                created with default values. The directory will also be created if it does not exist.
-     * @return A {@code TableLevelFormula} instance containing the validated level-to-XP mapping.
-     * @throws LevelingCoreException If any errors occur during file creation, reading, parsing, or validation of the
-     *                               level-to-XP data.
-     */
-    public static TableLevelFormula loadOrCreate(Path dataDir) {
+    public static TableLevelFormula loadOrCreateFromDataDir(String fileName) {
         try {
-            Files.createDirectories(dataDir);
-            var csvPath = dataDir.resolve("levels.csv");
+            var path = LevelingCore.configPath;
+            Files.createDirectories(path);
+            var csvPath = path.resolve(fileName);
 
             if (Files.notExists(csvPath)) {
                 Files.writeString(csvPath, DEFAULT_CSV, StandardCharsets.UTF_8, StandardOpenOption.CREATE_NEW);

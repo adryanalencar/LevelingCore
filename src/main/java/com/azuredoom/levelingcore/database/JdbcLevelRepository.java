@@ -1,13 +1,12 @@
 package com.azuredoom.levelingcore.database;
 
+import com.azuredoom.levelingcore.LevelingCore;
 import com.azuredoom.levelingcore.LevelingCoreException;
-import com.azuredoom.levelingcore.Main;
 import com.azuredoom.levelingcore.config.FormulaDescriptor;
 import com.azuredoom.levelingcore.config.LevelFormulaFactory;
 import com.azuredoom.levelingcore.level.formulas.LevelFormula;
 import com.azuredoom.levelingcore.playerdata.PlayerLevelData;
 
-import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
@@ -194,8 +193,7 @@ public class JdbcLevelRepository implements LevelRepository {
         }
 
         var oldFormula = LevelFormulaFactory.formulaFromDescriptor(
-            new FormulaDescriptor(oldType, oldParams),
-            Paths.get("./data")
+            new FormulaDescriptor(oldType, oldParams)
         );
 
         var select = "SELECT player_id, xp FROM player_levels";
@@ -236,7 +234,7 @@ public class JdbcLevelRepository implements LevelRepository {
             }
 
             c.commit();
-            Main.LOGGER.log(System.Logger.Level.INFO, "Migration completed");
+            LevelingCore.LOGGER.log(System.Logger.Level.INFO, "Migration completed");
         } catch (Exception e) {
             throw new LevelingCoreException("Failed to migrate XP to preserve levels", e);
         }

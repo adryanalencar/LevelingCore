@@ -1,7 +1,6 @@
 package com.azuredoom.levelingcore.config;
 
 import com.azuredoom.levelingcore.LevelingCoreException;
-import com.azuredoom.levelingcore.Main;
 import com.azuredoom.levelingcore.level.formulas.CustomExpressionLevelFormula;
 import com.azuredoom.levelingcore.level.formulas.ExponentialLevelFormula;
 import com.azuredoom.levelingcore.level.formulas.LevelFormula;
@@ -9,7 +8,6 @@ import com.azuredoom.levelingcore.level.formulas.LinearLevelFormula;
 import com.azuredoom.levelingcore.level.formulas.loader.LevelTableLoader;
 
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Locale;
@@ -31,7 +29,7 @@ public final class LevelFormulaFactory {
      * Constructs a {@link LevelFormula} object based on the provided configuration. The method determines the type of
      * formula to use (e.g., "EXPONENTIAL", "LINEAR", "TABLE", and "CUSTOM") and initializes the appropriate
      * implementation with the parameters specified in the configuration. If the configuration is null or invalid, a
-     * default {@link ExponentialLevelFormula} is returned. formula: custom: exp(a) * b/c
+     * default {@link ExponentialLevelFormula} is returned.
      *
      * @param config the configuration object containing the formula type and its associated parameters. Must not be
      *               null and must specify a valid type ("EXPONENTIAL", "LINEAR", "TABLE", or "CUSTOM").
@@ -58,10 +56,7 @@ public final class LevelFormulaFactory {
                 var maxLevel = config.formula.linear.maxLevel;
                 yield new LinearLevelFormula(xpPerLevel, maxLevel);
             }
-            case "TABLE" -> {
-                var dataDir = Main.configPath;
-                yield LevelTableLoader.loadOrCreateFromDataDir(dataDir, config.formula.table.file);
-            }
+            case "TABLE" -> LevelTableLoader.loadOrCreateFromDataDir(config.formula.table.file);
             case "CUSTOM" -> {
                 var expr = config.formula.custom.xpForLevel;
                 var constants = config.formula.custom.constants;
@@ -122,7 +117,7 @@ public final class LevelFormulaFactory {
      * @return a {@link LevelFormula} instance constructed according to the descriptor
      * @throws LevelingCoreException if the descriptor contains an unknown formula type
      */
-    public static LevelFormula formulaFromDescriptor(FormulaDescriptor d, Path dataDir) {
+    public static LevelFormula formulaFromDescriptor(FormulaDescriptor d) {
         var type = d.type().trim().toUpperCase(Locale.ROOT);
 
         Map<String, String> map = new HashMap<>();
@@ -146,7 +141,7 @@ public final class LevelFormulaFactory {
             );
             case "TABLE" -> {
                 var file = map.getOrDefault("file", "levels.csv");
-                yield LevelTableLoader.loadOrCreateFromDataDir(dataDir, file);
+                yield LevelTableLoader.loadOrCreateFromDataDir(file);
             }
             case "CUSTOM" -> {
                 var expr = unb64(map.getOrDefault("exprB64", b64("")));
@@ -209,7 +204,7 @@ public final class LevelFormulaFactory {
      * ("="). The keys are treated as strings and the values as doubles.
      *
      * @param b64 the Base64 URL-safe encoded string containing comma-separated key-value pairs. Each pair must be in
-     *            the format "key=value". The key is a string and the value is parsed as a double. If the input string
+     *            the format "key=value". The key is a string, and the value is parsed as a double. If the input string
      *            is null, empty, or invalid, an empty map is returned.
      * @return a map containing the decoded constants as key-value pairs, where keys are strings and values are doubles.
      *         If the input is null, empty, or invalid, the result will be an empty map.

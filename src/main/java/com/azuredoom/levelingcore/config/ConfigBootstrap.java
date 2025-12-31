@@ -1,10 +1,12 @@
 package com.azuredoom.levelingcore.config;
 
-import com.azuredoom.levelingcore.Main;
+import com.azuredoom.levelingcore.LevelingCoreException;
 import com.azuredoom.levelingcore.database.DataSourceFactory;
 import com.azuredoom.levelingcore.database.JdbcLevelRepository;
 import com.azuredoom.levelingcore.level.LevelService;
 import com.azuredoom.levelingcore.level.LevelServiceImpl;
+
+import java.nio.file.Path;
 
 /**
  * ConfigBootstrap is a utility class that initializes and configures the core components of the LevelingCore system.
@@ -35,8 +37,11 @@ public final class ConfigBootstrap {
      * @return A {@code Bootstrap} record containing the initialized {@code LevelService} and a {@code closeable}
      *         resource for managing the cleanup of associated resources.
      */
-    public static Bootstrap bootstrap() {
-        var config = ConfigManager.loadOrCreate(Main.configPath);
+    public static Bootstrap bootstrap(Path dataDir) {
+        if (dataDir == null) {
+            throw new LevelingCoreException("dataDir cannot be null");
+        }
+        var config = ConfigManager.loadOrCreate(dataDir);
         var formulaDescriptor = LevelFormulaFactory.descriptorFromConfig(config);
         var formula = LevelFormulaFactory.fromConfig(config);
         var ds = DataSourceFactory.create(
