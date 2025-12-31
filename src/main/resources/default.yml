@@ -5,10 +5,20 @@
 # =========================
 #
 # Supported JDBC URLs:
-#   H2 (file):      jdbc:h2:file:./data/plugins/levelingcore/levelingcore;MODE=PostgreSQL
-#   MySQL:          jdbc:mysql://host:port/dbname
-#   MariaDB:        jdbc:mariadb://host:port/dbname
-#   PostgreSQL:     jdbc:postgresql://host:port/dbname
+#   H2 (file):
+#     jdbc:h2:file:./data/plugins/levelingcore/levelingcore;MODE=PostgreSQL
+#
+#   MySQL:
+#     jdbc:mysql://host:port/dbname
+#     jdbc:mysql://host:port/dbname?user=dbuser&password=dbpass
+#
+#   MariaDB:
+#     jdbc:mariadb://host:port/dbname
+#     jdbc:mariadb://host:port/dbname?user=dbuser&password=dbpass
+#
+#   PostgreSQL:
+#     jdbc:postgresql://host:port/dbname
+#     jdbc:postgresql://host:port/dbname?user=dbuser&password=dbpass
 #
 # Notes:
 # - H2 commonly uses empty username/password unless you configured otherwise.

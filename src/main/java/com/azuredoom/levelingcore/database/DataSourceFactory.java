@@ -21,11 +21,9 @@ public final class DataSourceFactory {
      * Creates and returns a configured HikariCP connection pool (HikariDataSource) based on the provided inputs.
      * Ensures that the connection pool is initialized and validates connectivity with the database.
      *
-     * @param jdbcUrl     The JDBC URL used for the database connection. Must not be null or blank and should start with
-     *                    the prefix "jdbc:". Example: "jdbc:postgresql://host:5432/db".
-     * @param username    The database username used for authentication. Must not be null or blank.
-     * @param password    The database password used for authentication. May be null or blank, depending on the database
-     *                    configuration.
+     * @param jdbcUrl     The JDBC URL. May include embedded credentials (example: jdbc:mysql://user:pass@host:port/db).
+     * @param username    Optional database username. If provided, overrides credentials in jdbcUrl.
+     * @param password    Optional database password. Used only if a username is provided.
      * @param maxPoolSize The maximum size of the connection pool. Must be greater than or equal to 1.
      * @return A fully initialized HikariDataSource configured with the specified parameters.
      * @throws IllegalArgumentException         If any of the parameters do not meet the specified conditions.
@@ -41,8 +39,10 @@ public final class DataSourceFactory {
 
         var cfg = new HikariConfig();
         cfg.setJdbcUrl(jdbcUrl);
-        cfg.setUsername(username);
-        cfg.setPassword(password);
+        if (username != null && !username.isBlank()) {
+            cfg.setUsername(username);
+            cfg.setPassword(password);
+        }
 
         cfg.setDriverClassName(driverClassNameFor(jdbcUrl));
 
@@ -73,6 +73,61 @@ public final class DataSourceFactory {
     }
 
     /**
+     * Checks if the provided JDBC URL contains embedded credentials in the format "username:password". Specifically,
+     * this method evaluates if the JDBC URL matches the pattern commonly used for PostgreSQL, where the credentials are
+     * embedded before the host part of the URL.
+     *
+     * @param jdbcUrl The JDBC URL to evaluate. It may be null. If specified, it is expected to use the PostgreSQL
+     *                format and may include embedded credentials.
+     * @return true if the JDBC URL contains embedded credentials in the format "username:password" before the host.
+     *         false otherwise.
+     */
+    private static boolean hasUserInfoAuthority(String jdbcUrl) {
+        return jdbcUrl != null
+            && jdbcUrl.matches("^jdbc:postgresql://[^/@:]+:[^/@]+@.+");
+    }
+
+    /**
+     * Checks if the given JDBC URL contains embedded credentials. Embedded credentials are identified either by the
+     * format "username:password" in the connection URL (e.g., "jdbc:mysql://user:pass@host:port/db") or by the presence
+     * of query parameters such as "user" or "username".
+     *
+     * @param jdbcUrl The JDBC URL to check for embedded credentials. It may be null.
+     * @return {@code true} if the JDBC URL contains embedded credentials, either in the main URL or as query
+     *         parameters; {@code false} otherwise.
+     */
+    private static boolean hasCredentialsInJdbcUrl(String jdbcUrl) {
+        if (jdbcUrl == null)
+            return false;
+
+        var lower = jdbcUrl.toLowerCase();
+
+        if (lower.matches("^jdbc:[^:]+://[^/@:]+:[^/@]+@.+")) {
+            return true;
+        }
+
+        var q = lower.indexOf('?');
+        if (q < 0)
+            return false;
+
+        var query = lower.substring(q + 1);
+        return containsQueryParam(query, "user") || containsQueryParam(query, "username");
+    }
+
+    /**
+     * Checks if the specified query string contains a query parameter with the given key. A query parameter is
+     * identified by the format "key=value", with the key either appearing at the start of the query string or following
+     * an ampersand (&).
+     *
+     * @param query The query string to search. It may be null or empty.
+     * @param key   The key of the query parameter to look for. It must be non-null and non-empty.
+     * @return true if the query string contains a parameter with the specified key, false otherwise.
+     */
+    private static boolean containsQueryParam(String query, String key) {
+        return query.startsWith(key + "=") || query.contains("&" + key + "=");
+    }
+
+    /**
      * Checks if the provided JDBC URL corresponds to an H2 database.
      *
      * @param jdbcUrl The JDBC URL used for the database connection. It may be null. If specified, it is expected to
@@ -84,26 +139,57 @@ public final class DataSourceFactory {
     }
 
     /**
-     * Validates the basic configuration parameters required for establishing a database connection.
+     * Validates the basic configuration parameters required to establish a database connection. Ensures that the
+     * provided JDBC URL, username, and maximum pool size adhere to the expected constraints. Throws an
+     * IllegalArgumentException if any validation fails.
      *
-     * @param jdbcUrl     The JDBC URL used for the database connection. It must not be null or blank and should start
-     *                    with the prefix "jdbc:". Example: "jdbc:postgresql://host:5432/db".
-     * @param username    The database username used for authentication. It must not be null or blank.
-     * @param maxPoolSize The maximum size of the connection pool. It must be greater than or equal to 1.
-     * @throws IllegalArgumentException If any of the parameters do not meet the specified conditions.
+     * @param jdbcUrl     The JDBC URL used to establish the database connection. Must be non-null, non-blank, and start
+     *                    with "jdbc:". Example: "jdbc:postgresql://host:5432/db".
+     * @param username    Optional database username. If provided, it must be non-blank. If not provided, ensures
+     *                    credentials are embedded in the JDBC URL or validates compatibility with H2.
+     * @param maxPoolSize The maximum size of the connection pool. Must be a positive integer (>= 1).
+     * @throws IllegalArgumentException If any parameter does not meet the specified validation criteria.
      */
     private static void validateBasicConfig(String jdbcUrl, String username, int maxPoolSize) {
         if (jdbcUrl == null || jdbcUrl.isBlank()) {
-            throw new IllegalArgumentException("jdbcUrl is missing/blank (example: jdbc:postgresql://host:5432/db)");
+            throw new IllegalArgumentException(
+                "jdbcUrl is missing/blank (example: jdbc:postgresql://host:5432/db)"
+            );
         }
+
         if (!jdbcUrl.toLowerCase().startsWith("jdbc:")) {
-            throw new IllegalArgumentException("jdbcUrl must start with 'jdbc:' (got: " + jdbcUrl + ")");
+            throw new IllegalArgumentException(
+                "jdbcUrl must start with 'jdbc:' (got: " + jdbcUrl + ")"
+            );
         }
-        if (!isH2(jdbcUrl) && (username == null || username.isBlank())) {
-            throw new IllegalArgumentException("database username is missing/blank");
+
+        if (
+            jdbcUrl.toLowerCase().startsWith("jdbc:postgresql:")
+                && hasUserInfoAuthority(jdbcUrl)
+        ) {
+
+            throw new IllegalArgumentException(
+                """
+                    PostgreSQL JDBC URLs must not use 'user:password@host' syntax. \
+                    Use either:
+                      - jdbc:postgresql://host:port/db with dedicated username/password, or
+                      - jdbc:postgresql://host:port/db?user=...&password=..."""
+            );
         }
+
+        var hasUserArg = username != null && !username.isBlank();
+        var hasUrlCreds = hasCredentialsInJdbcUrl(jdbcUrl);
+
+        if (!isH2(jdbcUrl) && !hasUserArg && !hasUrlCreds) {
+            throw new IllegalArgumentException(
+                "database credentials are missing (provide username/password or embed them in jdbcUrl)"
+            );
+        }
+
         if (maxPoolSize < 1) {
-            throw new IllegalArgumentException("maxPoolSize must be >= 1 (got: " + maxPoolSize + ")");
+            throw new IllegalArgumentException(
+                "maxPoolSize must be >= 1 (got: " + maxPoolSize + ")"
+            );
         }
     }
 
