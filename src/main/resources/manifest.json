@@ -1,0 +1,22 @@
+{
+    "Group": "levelingcore",
+    "Name": "LevelingCore",
+    "Version": "0.1.0",
+    "Description": " A modern, flexible leveling system for Hytale!",
+    "Authors": [
+        {
+            "Name": "Azuredoom"
+        }
+    ],
+    "Website": "https://azuredoom.com/",
+    "ServerVersion": "*",
+    "Dependencies": {
+        
+    },
+    "OptionalDependencies": {
+        
+    },
+    "DisabledByDefault": false,
+    "Main": "com.azuredoom.levelingcore.LevelingCore",
+    "IncludesAssetPack": false
+}

@@ -9,8 +9,8 @@ import java.util.logging.Level;
 import javax.sql.DataSource;
 
 import com.azuredoom.levelingcore.LevelingCore;
-import com.azuredoom.levelingcore.config.FormulaDescriptor;
-import com.azuredoom.levelingcore.config.LevelFormulaFactory;
+import com.azuredoom.levelingcore.config.internal.FormulaDescriptor;
+import com.azuredoom.levelingcore.config.internal.LevelFormulaFactory;
 import com.azuredoom.levelingcore.exceptions.LevelingCoreException;
 import com.azuredoom.levelingcore.level.formulas.LevelFormula;
 import com.azuredoom.levelingcore.playerdata.PlayerLevelData;
@@ -199,7 +199,7 @@ public class JdbcLevelRepository {
             new FormulaDescriptor(oldType, oldParams)
         );
 
-        LevelingCore.LOGGER.log(Level.INFO, "Starting formula migration to {0}", newDesc.type());
+        LevelingCore.LOGGER.at(Level.INFO).log("Starting formula migration to {0}", newDesc.type());
 
         final var select = "SELECT player_id, xp FROM player_levels";
 
@@ -266,7 +266,7 @@ public class JdbcLevelRepository {
 
                         processed++;
                         if ((processed % 50_000) == 0) {
-                            LevelingCore.LOGGER.log(Level.INFO, "Migration staging progress: {0} rows", processed);
+                            LevelingCore.LOGGER.at(Level.INFO).log("Migration staging progress: {0} rows", processed);
                         }
                     }
                 }
@@ -278,7 +278,7 @@ public class JdbcLevelRepository {
 
             c.commit();
 
-            LevelingCore.LOGGER.log(Level.INFO, "Formula migration completed successfully");
+            LevelingCore.LOGGER.at(Level.INFO).log("Formula migration completed successfully");
         } catch (Exception e) {
             throw new LevelingCoreException("Failed to migrate XP to preserve levels", e);
         }
@@ -397,7 +397,7 @@ public class JdbcLevelRepository {
     public void close() {
         try {
             if (dataSource instanceof AutoCloseable c) {
-                LevelingCore.LOGGER.log(Level.INFO, "Closing JDBC datasource");
+                LevelingCore.LOGGER.at(Level.INFO).log("Closing JDBC datasource");
                 c.close();
             }
         } catch (Exception e) {

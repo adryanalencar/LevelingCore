@@ -1,4 +1,4 @@
-package com.azuredoom.levelingcore.config;
+package com.azuredoom.levelingcore.config.internal;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -15,7 +15,7 @@ public class LevelingCoreConfig {
 
     public static class Database {
 
-        public String jdbcUrl = "jdbc:h2:file:./data/plugins/levelingcore/levelingcore;MODE=PostgreSQL";
+        public String jdbcUrl = "jdbc:h2:file:./data/levelingcore/levelingcore;MODE=PostgreSQL";
 
         public String username = "";
 

@@ -25,7 +25,7 @@
 # - For MySQL/MariaDB/Postgres, set username/password.
 #
 database:
-  jdbcUrl: "jdbc:h2:file:./data/plugins/levelingcore/levelingcore;MODE=PostgreSQL"
+  jdbcUrl: "jdbc:h2:file:./mods/levelingcore_LevelingCore/data/levelingcore;MODE=PostgreSQL"
   username: ""
   password: ""
   maxPoolSize: 10

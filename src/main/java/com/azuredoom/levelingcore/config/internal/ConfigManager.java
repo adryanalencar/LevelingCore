@@ -1,4 +1,4 @@
-package com.azuredoom.levelingcore.config;
+package com.azuredoom.levelingcore.config.internal;
 
 import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
@@ -48,7 +48,7 @@ public final class ConfigManager {
                             "default.yml not found in resources (expected at /default.yml)"
                         );
                     }
-                    LevelingCore.LOGGER.log(Level.INFO, "Creating default config at {0}", configPath);
+                    LevelingCore.LOGGER.at(Level.INFO).log("Creating default config at {0}", configPath);
                     Files.copy(in, configPath, StandardCopyOption.REPLACE_EXISTING);
                 } catch (Exception e) {
                     throw new LevelingCoreException("Failed to create default config", e);
@@ -61,7 +61,7 @@ public final class ConfigManager {
             var yaml = new Yaml(new Constructor(LevelingCoreConfig.class, opts));
             try (var reader = Files.newBufferedReader(configPath, StandardCharsets.UTF_8)) {
                 LevelingCoreConfig cfg = yaml.load(reader);
-                LevelingCore.LOGGER.log(Level.INFO, "Loaded config from {0}", configPath);
+                LevelingCore.LOGGER.at(Level.INFO).log("Loaded config from {0}", configPath);
                 return (cfg != null) ? cfg : new LevelingCoreConfig();
             }
 

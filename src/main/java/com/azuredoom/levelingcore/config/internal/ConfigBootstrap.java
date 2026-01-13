@@ -1,4 +1,4 @@
-package com.azuredoom.levelingcore.config;
+package com.azuredoom.levelingcore.config.internal;
 
 import java.nio.file.Path;
 

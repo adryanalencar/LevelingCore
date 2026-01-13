@@ -1,4 +1,4 @@
-package com.azuredoom.levelingcore.config;
+package com.azuredoom.levelingcore.config.internal;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;

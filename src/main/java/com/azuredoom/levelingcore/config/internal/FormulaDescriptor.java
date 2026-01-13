@@ -1,4 +1,4 @@
-package com.azuredoom.levelingcore.config;
+package com.azuredoom.levelingcore.config.internal;
 
 /**
  * A descriptor class for defining the type and parameters of a leveling formula.
