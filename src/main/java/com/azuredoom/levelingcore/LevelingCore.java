@@ -1,10 +1,8 @@
 package com.azuredoom.levelingcore;
 
-import com.azuredoom.levelingcore.events.GainXPEventSystem;
 import com.hypixel.hytale.logger.HytaleLogger;
 import com.hypixel.hytale.server.core.plugin.JavaPlugin;
 import com.hypixel.hytale.server.core.plugin.JavaPluginInit;
-import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import com.hypixel.hytale.server.core.util.Config;
 
 import java.nio.file.Path;
@@ -15,6 +13,8 @@ import javax.annotation.Nonnull;
 import com.azuredoom.levelingcore.commands.*;
 import com.azuredoom.levelingcore.config.GUIConfig;
 import com.azuredoom.levelingcore.config.internal.ConfigBootstrap;
+import com.azuredoom.levelingcore.events.GainXPEventSystem;
+import com.azuredoom.levelingcore.events.LossXPEventSystem;
 import com.azuredoom.levelingcore.exceptions.LevelingCoreException;
 import com.azuredoom.levelingcore.level.LevelServiceImpl;
 
@@ -24,9 +24,9 @@ public class LevelingCore extends JavaPlugin {
 
     public static final Path configPath = Paths.get("./mods/levelingcore_LevelingCore/data/config/");
 
-    private static final ConfigBootstrap.Bootstrap bootstrap = ConfigBootstrap.bootstrap(configPath);
+    public static final ConfigBootstrap.Bootstrap bootstrap = ConfigBootstrap.bootstrap(configPath);
 
-    private static LevelServiceImpl levelingService;
+    public static LevelServiceImpl levelingService;
 
     private static LevelingCore INSTANCE;
 
@@ -46,9 +46,14 @@ public class LevelingCore extends JavaPlugin {
         config = this.withConfig("levelingcore", GUIConfig.CODEC);
     }
 
+    /**
+     * Initializes the core components of the leveling system. This method sets up necessary configurations, registers
+     * commands, and configures systems to handle player leveling and experience management. It also initializes the
+     * singleton instance of the {@code LevelingCore} class.
+     */
     @Override
     protected void setup() {
-        super.setup();
+        INSTANCE = this;
         this.config.save();
         LOGGER.at(Level.INFO).log("Leveling Core initializing");
         levelingService = bootstrap.service();
@@ -58,9 +63,17 @@ public class LevelingCore extends JavaPlugin {
         getCommandRegistry().registerCommand(new SetLevelCommand());
         getCommandRegistry().registerCommand(new RemoveLevelCommand());
         getCommandRegistry().registerCommand(new RemoveXpCommand());
-        getEntityStoreRegistry().registerSystem(new GainXPEventSystem());
+        getEntityStoreRegistry().registerSystem(new GainXPEventSystem(config));
+        getEntityStoreRegistry().registerSystem(new LossXPEventSystem(config));
     }
 
+    /**
+     * Shuts down the {@code LevelingCore} instance and releases allocated resources. This method performs cleanup
+     * operations required to properly terminate the leveling system. It includes closing any resources associated with
+     * the {@code bootstrap} object and logging the shutdown process.
+     *
+     * @throws LevelingCoreException if resource cleanup fails.
+     */
     @Override
     protected void shutdown() {
         super.shutdown();
@@ -71,18 +84,6 @@ public class LevelingCore extends JavaPlugin {
             throw new LevelingCoreException("Failed to close resources", e);
         }
     }
-
-    // static void main() {
-    // TODO: Remove once hooks into the player/mob kill events are found and integrable.
-    // var testId = UUID.fromString("d3804858-4bb8-4026-ae21-386255ed467d");
-    // if (LevelingCoreApi.getLevelServiceIfPresent().isPresent()) {
-    // var levelingService = LevelingCoreApi.getLevelServiceIfPresent().get();
-    // levelingService.addXp(testId, 500);
-    // TODO: Move to chat or display based logging instead of loggers for gaining or lossing Levels/XP.
-    // LOGGER.at(Level.INFO).log("Added 500 XP to player");
-    // LOGGER.at(Level.INFO).log("Player level: " + levelingService.getLevel(testId));
-    // }
-    // }
 
     /**
      * Retrieves the {@link LevelServiceImpl} instance managed by the {@code LevelingCore} class. The

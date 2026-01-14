@@ -6,11 +6,18 @@ import com.hypixel.hytale.server.core.command.system.arguments.system.RequiredAr
 import com.hypixel.hytale.server.core.command.system.arguments.types.ArgTypes;
 import com.hypixel.hytale.server.core.command.system.basecommands.CommandBase;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
+import com.hypixel.hytale.server.core.util.EventTitleUtil;
 
 import javax.annotation.Nonnull;
 
 import com.azuredoom.levelingcore.api.LevelingCoreApi;
 
+/**
+ * The AddXpCommand class is responsible for handling the logic to add experience points (XP) to a player's progress
+ * using the LevelingCore API. This command validates that the leveling system is initialized before proceeding with XP
+ * modification. It updates the player's XP and calculates the resulting level, sending feedback messages to both the
+ * player and the command executor.
+ */
 public class AddXpCommand extends CommandBase {
 
     @Nonnull
@@ -39,7 +46,13 @@ public class AddXpCommand extends CommandBase {
         var xpRef = this.xpArg.get(commandContext);
         var playerUUID = playerRef.getUuid();
         LevelingCoreApi.getLevelServiceIfPresent().get().addXp(playerUUID, xpRef);
-        commandContext.sendMessage(Message.raw("Added " + xpRef + " xp to " + playerRef.getUsername()));
-        commandContext.sendMessage(Message.raw("Player " + playerRef.getUsername() + " now has " + LevelingCoreApi.getLevelServiceIfPresent().get().getXp(playerUUID) + " xp"));
+        var setXPMsg = "Set " + playerRef.getUsername() + " xp to " + xpRef;
+        var levelTotalMsg = "Player " + playerRef.getUsername() + " is now level " + LevelingCoreApi
+            .getLevelServiceIfPresent()
+            .get()
+            .getLevel(playerUUID);
+        EventTitleUtil.showEventTitleToPlayer(playerRef, Message.raw(levelTotalMsg), Message.raw(setXPMsg), true);
+        commandContext.sendMessage(Message.raw(setXPMsg));
+        commandContext.sendMessage(Message.raw(levelTotalMsg));
     }
 }

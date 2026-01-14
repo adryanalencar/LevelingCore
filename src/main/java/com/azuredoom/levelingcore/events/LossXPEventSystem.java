@@ -1,0 +1,90 @@
+package com.azuredoom.levelingcore.events;
+
+import com.hypixel.hytale.component.CommandBuffer;
+import com.hypixel.hytale.component.Ref;
+import com.hypixel.hytale.component.Store;
+import com.hypixel.hytale.component.query.Query;
+import com.hypixel.hytale.server.core.Message;
+import com.hypixel.hytale.server.core.entity.entities.Player;
+import com.hypixel.hytale.server.core.modules.entity.damage.DeathComponent;
+import com.hypixel.hytale.server.core.modules.entity.damage.DeathSystems;
+import com.hypixel.hytale.server.core.universe.Universe;
+import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
+import com.hypixel.hytale.server.core.util.Config;
+
+import javax.annotation.Nonnull;
+
+import com.azuredoom.levelingcore.api.LevelingCoreApi;
+import com.azuredoom.levelingcore.config.GUIConfig;
+
+/**
+ * The LossXPEventSystem class is a subsystem that extends {@link DeathSystems.OnDeathSystem} to handle experience
+ * points (XP) and level loss events when an entity with a {@link DeathComponent} dies. The system logic for XP or level
+ * reduction is determined based on the {@link GUIConfig} provided during initialization.
+ */
+public class LossXPEventSystem extends DeathSystems.OnDeathSystem {
+
+    private final Config<GUIConfig> config;
+
+    public LossXPEventSystem(Config<GUIConfig> config) {
+        this.config = config;
+    }
+
+    @Override
+    public Query<EntityStore> getQuery() {
+        return Query.any();
+    }
+
+    @Override
+    public void onComponentAdded(
+        @Nonnull Ref<EntityStore> ref,
+        @Nonnull DeathComponent component,
+        @Nonnull Store<EntityStore> store,
+        @Nonnull CommandBuffer<EntityStore> commandBuffer
+    ) {
+        var deathInfo = component.getDeathInfo();
+        if (deathInfo == null)
+            return;
+
+        if (!this.config.get().isEnableXPLossOnDeath()) {
+            return;
+        }
+
+        var player = store.getComponent(ref, Player.getComponentType());
+        if (player == null)
+            return;
+
+        LevelingCoreApi.getLevelServiceIfPresent().ifPresent(levelService -> {
+            var playerUuid = player.getUuid();
+            long currentXp = levelService.getXp(playerUuid);
+            int currentLevel = levelService.getLevel(playerUuid);
+            if (this.config.get().isEnableLevelDownOnDeath()) {
+                long xpLoss = (long) (currentXp * this.config.get().getXpLossPercentage());
+                if (xpLoss <= 0)
+                    return;
+                levelService.removeXp(playerUuid, xpLoss);
+                Universe.get().sendMessage(Message.raw("You died and lost " + xpLoss + " XP"));
+                int levelAfter = levelService.getLevel(playerUuid);
+                if (levelAfter < currentLevel) {
+                    Universe.get().sendMessage(Message.raw("Level Down! You are now level " + levelAfter));
+                }
+            } else if (this.config.get().isEnableAllLevelsLostOnDeath()) {
+                levelService.setLevel(playerUuid, 1);
+                Universe.get().sendMessage(Message.raw("You died and lost all levels"));
+            } else if (this.config.get().getMinLevelForLevelDown() <= currentLevel) {
+                long levelFloorXp = levelService.getXpForLevel(currentLevel);
+                long xpLoss = (long) (currentXp * this.config.get().getXpLossPercentage());
+                long newXp = Math.max(levelFloorXp, currentXp - xpLoss);
+                long actualLoss = currentXp - newXp;
+
+                if (actualLoss <= 0) {
+                    Universe.get()
+                        .sendMessage(Message.raw("You are already at the minimum XP for level " + currentLevel));
+                    return;
+                }
+                levelService.setXp(playerUuid, newXp);
+                Universe.get().sendMessage(Message.raw("You died and lost " + actualLoss + " XP"));
+            }
+        });
+    }
+}

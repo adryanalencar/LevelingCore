@@ -6,11 +6,17 @@ import com.hypixel.hytale.server.core.command.system.arguments.system.RequiredAr
 import com.hypixel.hytale.server.core.command.system.arguments.types.ArgTypes;
 import com.hypixel.hytale.server.core.command.system.basecommands.CommandBase;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
+import com.hypixel.hytale.server.core.util.EventTitleUtil;
 
 import javax.annotation.Nonnull;
 
 import com.azuredoom.levelingcore.api.LevelingCoreApi;
 
+/**
+ * The CheckLevelCommand class is a concrete implementation of the CommandBase class. This command allows users to check
+ * the current level of a specified player in the game. It interacts with the Leveling Core API to retrieve level data
+ * for a given player.
+ */
 public class CheckLevelCommand extends CommandBase {
 
     @Nonnull
@@ -33,12 +39,9 @@ public class CheckLevelCommand extends CommandBase {
         }
         var playerRef = this.playerArg.get(commandContext);
         var playerUUID = playerRef.getUuid();
-        commandContext.sendMessage(
-            Message.raw(
-                playerRef.getUsername() + " level is: " + LevelingCoreApi.getLevelServiceIfPresent()
-                    .get()
-                    .getLevel(playerUUID)
-            )
-        );
+        var levelRef = LevelingCoreApi.getLevelServiceIfPresent().get().getLevel(playerUUID);
+        var currentLevelMsg = playerRef.getUsername() + " current level is " + levelRef;
+        EventTitleUtil.showEventTitleToPlayer(playerRef, Message.raw(currentLevelMsg), Message.raw(""), true);
+        commandContext.sendMessage(Message.raw(currentLevelMsg));
     }
 }

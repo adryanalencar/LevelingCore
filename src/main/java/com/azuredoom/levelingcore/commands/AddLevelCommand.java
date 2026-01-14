@@ -6,11 +6,18 @@ import com.hypixel.hytale.server.core.command.system.arguments.system.RequiredAr
 import com.hypixel.hytale.server.core.command.system.arguments.types.ArgTypes;
 import com.hypixel.hytale.server.core.command.system.basecommands.CommandBase;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
+import com.hypixel.hytale.server.core.util.EventTitleUtil;
 
 import javax.annotation.Nonnull;
 
 import com.azuredoom.levelingcore.api.LevelingCoreApi;
 
+/**
+ * The AddLevelCommand class is responsible for handling the command logic to add levels to a player's progress using
+ * the LevelingCore API. This command ensures that the leveling system is properly initialized before performing any
+ * operations and updates the player's level accordingly. Feedback messages are sent to both the player and the command
+ * executor.
+ */
 public class AddLevelCommand extends CommandBase {
 
     @Nonnull
@@ -39,7 +46,13 @@ public class AddLevelCommand extends CommandBase {
         var levelRef = this.levelArg.get(commandContext);
         var playerUUID = playerRef.getUuid();
         LevelingCoreApi.getLevelServiceIfPresent().get().addLevel(playerUUID, levelRef);
-        commandContext.sendMessage(Message.raw("Added " + levelRef + " levels to " + playerRef.getUsername()));
-        commandContext.sendMessage(Message.raw("Player " + playerRef.getUsername() + " now has " + LevelingCoreApi.getLevelServiceIfPresent().get().getLevel(playerUUID) + " levels"));
+        var addedLevelMsg = "Added " + levelRef + " levels to " + playerRef.getUsername();
+        var levelTotalMsg = "Player " + playerRef.getUsername() + " is now level " + LevelingCoreApi
+            .getLevelServiceIfPresent()
+            .get()
+            .getLevel(playerUUID);
+        EventTitleUtil.showEventTitleToPlayer(playerRef, Message.raw(levelTotalMsg), Message.raw(levelTotalMsg), true);
+        commandContext.sendMessage(Message.raw(addedLevelMsg));
+        commandContext.sendMessage(Message.raw(levelTotalMsg));
     }
 }

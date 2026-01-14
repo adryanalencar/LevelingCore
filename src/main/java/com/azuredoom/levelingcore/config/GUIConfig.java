@@ -4,6 +4,12 @@ import com.hypixel.hytale.codec.Codec;
 import com.hypixel.hytale.codec.KeyedCodec;
 import com.hypixel.hytale.codec.builder.BuilderCodec;
 
+/**
+ * Represents the configuration for the Graphical User Interface (GUI) settings, particularly for managing experience
+ * points (XP) and leveling mechanics. This class provides options to configure the behavior of experience loss, gain,
+ * and level adjustments in different scenarios. The configuration is encoded and decoded using a predefined codec for
+ * persistence and retrieval.
+ */
 public class GUIConfig {
 
     public static final BuilderCodec<GUIConfig> CODEC = BuilderCodec.builder(GUIConfig.class, GUIConfig::new)
@@ -20,9 +26,33 @@ public class GUIConfig {
         )
         .add()
         .append(
+            new KeyedCodec<Double>("DefaultXPGainPercentage", Codec.DOUBLE),
+            (exConfig, aDouble, extraInfo) -> exConfig.defaultXPGainPercentage = aDouble,
+            (exConfig, extraInfo) -> exConfig.defaultXPGainPercentage
+        )
+        .add()
+        .append(
             new KeyedCodec<Boolean>("EnableDefaultXPGainSystem", Codec.BOOLEAN),
             (exConfig, aDouble, extraInfo) -> exConfig.enableDefaultXPGainSystem = aDouble,
             (exConfig, extraInfo) -> exConfig.enableDefaultXPGainSystem
+        )
+        .add()
+        .append(
+            new KeyedCodec<Boolean>("EnableLevelDownOnDeath", Codec.BOOLEAN),
+            (exConfig, aDouble, extraInfo) -> exConfig.enableLevelDownOnDeath = aDouble,
+            (exConfig, extraInfo) -> exConfig.enableLevelDownOnDeath
+        )
+        .add()
+        .append(
+            new KeyedCodec<Boolean>("EnableAllLevelsLostOnDeath", Codec.BOOLEAN),
+            (exConfig, aDouble, extraInfo) -> exConfig.enableAllLevelsLostOnDeath = aDouble,
+            (exConfig, extraInfo) -> exConfig.enableAllLevelsLostOnDeath
+        )
+        .add()
+        .append(
+            new KeyedCodec<Integer>("MinLevelForLevelDown", Codec.INTEGER),
+            (exConfig, aDouble, extraInfo) -> exConfig.minLevelForLevelDown = aDouble,
+            (exConfig, extraInfo) -> exConfig.minLevelForLevelDown
         )
         .add()
         .build();
@@ -31,19 +61,78 @@ public class GUIConfig {
 
     private double xpLossPercentage = 0.1;
 
+    private double defaultXPGainPercentage = 0.5;
+
     private boolean enableDefaultXPGainSystem = true;
+
+    private boolean enableLevelDownOnDeath = false;
+
+    private boolean enableAllLevelsLostOnDeath = false;
+
+    private int minLevelForLevelDown = 65;
 
     public GUIConfig() {}
 
+    /**
+     * Retrieves the minimum level required to allow a level-down operation in the configuration.
+     *
+     * @return the minimum level as an integer required for level-down.
+     */
+    public int getMinLevelForLevelDown() {
+        return minLevelForLevelDown;
+    }
+
+    /**
+     * Retrieves the default percentage of experience points (XP) gained.
+     *
+     * @return the default XP gain percentage as a double.
+     */
+    public double getDefaultXPGainPercentage() {
+        return defaultXPGainPercentage;
+    }
+
+    /**
+     * Retrieves the percentage of experience points (XP) lost upon death.
+     *
+     * @return the XP loss percentage as a double.
+     */
     public double getXpLossPercentage() {
         return xpLossPercentage;
     }
 
+    /**
+     * Indicates whether the loss of experience points (XP) upon death is enabled.
+     *
+     * @return {@code true} if XP loss on death is enabled, otherwise {@code false}.
+     */
     public boolean isEnableXPLossOnDeath() {
         return enableXPLossOnDeath;
     }
 
+    /**
+     * Determines whether the default experience points (XP) gain system is enabled in the configuration.
+     *
+     * @return {@code true} if the default XP gain system is enabled, otherwise {@code false}.
+     */
     public boolean isEnableDefaultXPGainSystem() {
         return enableDefaultXPGainSystem;
+    }
+
+    /**
+     * Indicates whether the level-down system is enabled upon death.
+     *
+     * @return {@code true} if level-down on death is enabled, otherwise {@code false}.
+     */
+    public boolean isEnableLevelDownOnDeath() {
+        return enableLevelDownOnDeath;
+    }
+
+    /**
+     * Indicates whether the configuration is set to enable the loss of all levels upon death.
+     *
+     * @return {@code true} if all levels are lost upon death, otherwise {@code false}.
+     */
+    public boolean isEnableAllLevelsLostOnDeath() {
+        return enableAllLevelsLostOnDeath;
     }
 }

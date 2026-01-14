@@ -6,11 +6,16 @@ import com.hypixel.hytale.server.core.command.system.arguments.system.RequiredAr
 import com.hypixel.hytale.server.core.command.system.arguments.types.ArgTypes;
 import com.hypixel.hytale.server.core.command.system.basecommands.CommandBase;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
+import com.hypixel.hytale.server.core.util.EventTitleUtil;
 
 import javax.annotation.Nonnull;
 
 import com.azuredoom.levelingcore.api.LevelingCoreApi;
 
+/**
+ * This class represents a command that allows adjusting the level of a player within the context of the leveling
+ * system.
+ */
 public class SetLevelCommand extends CommandBase {
 
     @Nonnull
@@ -38,9 +43,15 @@ public class SetLevelCommand extends CommandBase {
         var playerRef = this.playerArg.get(commandContext);
         var levelRef = this.levelArg.get(commandContext);
         var playerUUID = playerRef.getUuid();
-        LevelingCoreApi.getLevelServiceIfPresent().get().addLevel(playerUUID, levelRef);
-        commandContext.sendMessage(Message.raw("Set " + playerRef.getUsername()+ " level to " + levelRef));
-        commandContext.sendMessage(Message.raw("Player " + playerRef.getUsername() + " now has " + LevelingCoreApi.getLevelServiceIfPresent().get().getLevel(playerUUID) + " levels"));
+        LevelingCoreApi.getLevelServiceIfPresent().get().setLevel(playerUUID, levelRef);
+        var setLevelMsg = "Set " + playerRef.getUsername() + " level to " + levelRef;
+        var levelTotalMsg = "Player " + playerRef.getUsername() + " is now level " + LevelingCoreApi
+            .getLevelServiceIfPresent()
+            .get()
+            .getLevel(playerUUID);
+        EventTitleUtil.showEventTitleToPlayer(playerRef, Message.raw(levelTotalMsg), Message.raw(setLevelMsg), true);
+        commandContext.sendMessage(Message.raw(setLevelMsg));
+        commandContext.sendMessage(Message.raw(levelTotalMsg));
     }
 
 }

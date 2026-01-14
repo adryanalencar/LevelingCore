@@ -11,7 +11,7 @@
     "Website": "https://azuredoom.com/",
     "ServerVersion": "*",
     "Dependencies": {
-        
+        "Hytale:EntityModule": "*"
     },
     "OptionalDependencies": {
         

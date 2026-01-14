@@ -18,6 +18,11 @@ ext {
     }
 }
 
+configurations {
+    shadowBundle
+    implementation.extendsFrom(shadowBundle)
+}
+
 javadoc {
     options.addStringOption('Xdoclint:-missing', '-quiet')
 }
@@ -38,18 +43,19 @@ repositories {
 
 dependencies {
     // Hytale server
-    implementation(files("$hytaleHome/install/$patchline/package/game/latest/Server/HytaleServer.jar"))
+    compileOnly(files("$hytaleHome/install/$patchline/package/game/latest/Server/HytaleServer.jar"))
+    runtimeOnly(files("$hytaleHome/install/$patchline/package/game/latest/Server/HytaleServer.jar"))
     // implementation("com.buuz135:MultipleHUD:1.0.1")
     // Needed libs
-    implementation 'com.h2database:h2:2.4.240'
-    implementation 'com.zaxxer:HikariCP:7.0.2'
-    implementation 'org.slf4j:slf4j-simple:2.0.17'
-    implementation 'org.yaml:snakeyaml:2.5'
-    implementation 'net.objecthunter:exp4j:0.4.8'
+    shadowBundle 'com.h2database:h2:2.4.240'
+    shadowBundle 'com.zaxxer:HikariCP:7.0.2'
+    shadowBundle 'org.slf4j:slf4j-simple:2.0.17'
+    shadowBundle 'org.yaml:snakeyaml:2.5'
+    shadowBundle 'net.objecthunter:exp4j:0.4.8'
     // Drivers
-    implementation 'com.mysql:mysql-connector-j:9.5.0'
-    implementation 'org.mariadb.jdbc:mariadb-java-client:3.5.7'
-    implementation 'org.postgresql:postgresql:42.7.8'
+    shadowBundle 'com.mysql:mysql-connector-j:9.5.0'
+    shadowBundle 'org.mariadb.jdbc:mariadb-java-client:3.5.7'
+    shadowBundle 'org.postgresql:postgresql:42.7.8'
     // Testing
     testImplementation platform("org.junit:junit-bom:6.0.1")
     testImplementation "org.junit.jupiter:junit-jupiter"
@@ -93,10 +99,6 @@ idea.project.settings.runConfigurations {
     }
 }
 
-test {
-    useJUnitPlatform()
-}
-
 spotless {
     java {
         eclipse().configFile("$rootDir/eclipse-formatter.xml")
@@ -111,6 +113,8 @@ spotless {
 shadowJar {
     archiveClassifier.set('')
     mergeServiceFiles()
+
+    configurations = [project.configurations.shadowBundle]
 
     manifest {
         attributes(
